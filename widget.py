@@ -39,8 +39,8 @@ class Widget(QFrame):
 
         # 初始化 ChatGPTService 並移動到 QThread 中
         self.chatgpt_service = ChatGPTService()
-        self.sendImage.connect(self.chatgpt_service.sendImage)  # 連接信號到槽
-        self.textToVoice.connect(self.chatgpt_service.textToVoice) 
+        #self.sendImage.connect(self.chatgpt_service.sendImage)  # 連接信號到槽
+        #self.textToVoice.connect(self.chatgpt_service.textToVoice) 
         
         self.thread = QThread()
         self.chatgpt_service.moveToThread(self.thread)

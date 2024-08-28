@@ -2,33 +2,37 @@
 # window_capture.py
 
 from PyQt5.QtCore import Qt, QRect, QBuffer, QIODevice
-from PyQt5.QtGui import QPixmap, QCursor, QPainter, QColor, QPen
+from PyQt5.QtGui import QPixmap, QCursor, QPainter, QColor, QPen, QBrush
 from PyQt5.QtWidgets import QApplication, QWidget
 
 class WindowCapture(QWidget):
     def __init__(self, callback):
         super().__init__()
         self.update_full_screen_pixmap()
-        self.setWindowOpacity(0.1)
-        self.setAttribute(Qt.WA_TranslucentBackground)        
+        #self.setWindowOpacity(0.1)
+        self.setAttribute(Qt.WA_NoSystemBackground)
+        self.setAttribute(Qt.WA_TranslucentBackground)   
+        self.setWindowFlag(Qt.FramelessWindowHint)     
         self.selecting = False
         self.start_point = None
         self.end_point = None
         self.callback = callback
         self.showFullScreen()
         self.show()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.selecting = True
-            self.start_point = event.pos()
-        elif event.button() == Qt.Key_Escape:
+    
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
             self.selecting = False
             self.start_point = None
             self.end_point = None
             self.full_screen_pixmap = None
             self.callback(self.full_screen_pixmap)
             QApplication.setOverrideCursor(Qt.ArrowCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.selecting = True
+            self.start_point = event.pos()
 
     def update_full_screen_pixmap(self):
         mouse_pos = QCursor.pos()
@@ -50,12 +54,11 @@ class WindowCapture(QWidget):
             self.capture_selected_area()
 
     def paintEvent(self, event):
-        painter = QPainter(self)        
-
-        if self.selecting and self.start_point and self.end_point:
-            painter.fillRect(self.rect(), QColor(0, 0, 0, 240))
-            painter.end()
-        
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QBrush(QColor(255, 255, 255, 1)))
+        painter.end()
+            
+        if self.selecting and self.start_point and self.end_point:                    
             painter.begin(self)
             rect = QRect(self.start_point, self.end_point).normalized()
             painter.fillRect(rect, QColor(255, 255, 255, 150))
@@ -63,8 +66,8 @@ class WindowCapture(QWidget):
             painter.setPen(pen)
             painter.drawRect(rect)
             painter.end()
-
-    def capture_selected_area(self):
+            
+    def get_capture_selected_area(self):
         rect = QRect(self.start_point, self.end_point).normalized()
         pic_real_size = self.full_screen_pixmap.size()
         win_size = self.size()
@@ -75,6 +78,10 @@ class WindowCapture(QWidget):
 
         img_rect = QRect(real_rect_x, real_rect_y, real_rect_w, real_rect_h)
         captured_pixmap = self.full_screen_pixmap.copy(img_rect)
-        self.callback(captured_pixmap)
+        return captured_pixmap, img_rect
+
+    def capture_selected_area(self):        
+        image, _ = self.get_capture_selected_area()
+        self.callback(image)
         QApplication.setOverrideCursor(Qt.ArrowCursor)
 
