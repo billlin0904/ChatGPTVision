@@ -33,6 +33,9 @@ class WindowCapture(QWidget):
         screen_size = screen.size()
         return screen_size
     
+    def get_image_size(self):
+        return self.full_screen_pixmap.size()
+    
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             self.selecting = False

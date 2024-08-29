@@ -26,21 +26,21 @@ class Window(FluentWindow):
 
     def __init__(self):
         super().__init__()
-        self.homeInterface = Widget('Capture', self)
+        self.homeInterface = Widget('Ask GPT', self)
         self.homeInterface.showWindow.connect(self.showOrHidden)
         self.settingInterface = Widget('Setting', self)
         self.initNavigation()
         self.initWindow()
 
     def initNavigation(self):
-        self.addSubInterface(self.homeInterface, FIF.HOME, 'Home')
+        self.addSubInterface(self.homeInterface, FIF.HOME, 'Ask GTP')
         self.addSubInterface(self.settingInterface, FIF.SETTING, 'Settings', NavigationItemPosition.BOTTOM)
         self.navigationInterface.setAcrylicEnabled(True)
 
     def initWindow(self):
         self.resize(900, 700)
-        self.setWindowIcon(QIcon(':/qfluentwidgets/images/logo.png'))
-        self.setWindowTitle('ChatGPT Vision')
+        self.setWindowIcon(QIcon('./assets/icons/horus.ico'))
+        self.setWindowTitle('Horus')
         
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()

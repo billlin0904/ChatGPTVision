@@ -47,8 +47,8 @@ class ChatGPTService(QObject):
             print(f"發送文字轉語音過程中發生錯誤：{e}")
             self.textToVoiceReady.emit(b"")   
 
-    @pyqtSlot(QPixmap)
-    def sendImage(self, pixmap: QPixmap):
+    @pyqtSlot(QPixmap, str)
+    def sendImage(self, pixmap: QPixmap, prompt: str):
         """
         將 QPixmap 圖片轉換為 base64 並以文本形式發送到 OpenAI API 進行分析。
         """
@@ -68,7 +68,7 @@ class ChatGPTService(QObject):
                 "Authorization": f"Bearer {api_key}"
             }
 
-            prompt = "What’s in this image? use traditional chinese response."
+            #prompt = "What’s in this image? use traditional chinese response."
             payload = {
                 "model": "gpt-4o-mini",
                 "messages": [
