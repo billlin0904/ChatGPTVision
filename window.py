@@ -5,6 +5,7 @@ from qfluentwidgets import FluentWindow, MessageBox, NavigationItemPosition
 from widget import Widget
 from qfluentwidgets import FluentIcon as FIF
 from PyQt5.QtWidgets import QApplication
+import sys
 
 class Window(FluentWindow):
     def showOrHidden(self, isShow):
@@ -40,7 +41,8 @@ class Window(FluentWindow):
         self.resize(900, 700)
         self.setWindowIcon(QIcon(':/qfluentwidgets/images/logo.png'))
         self.setWindowTitle('ChatGPT Vision')
-
+        
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
+    

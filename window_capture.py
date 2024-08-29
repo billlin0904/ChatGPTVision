@@ -1,24 +1,37 @@
 # coding:utf-8
 # window_capture.py
 
-from PyQt5.QtCore import Qt, QRect, QBuffer, QIODevice
+from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPixmap, QCursor, QPainter, QColor, QPen, QBrush
 from PyQt5.QtWidgets import QApplication, QWidget
+import sys
 
 class WindowCapture(QWidget):
     def __init__(self, callback):
         super().__init__()
         self.update_full_screen_pixmap()
+        
         #self.setWindowOpacity(0.1)
         self.setAttribute(Qt.WA_NoSystemBackground)
-        self.setAttribute(Qt.WA_TranslucentBackground)   
-        self.setWindowFlag(Qt.FramelessWindowHint)     
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setWindowFlag(Qt.FramelessWindowHint)
+
         self.selecting = False
         self.start_point = None
         self.end_point = None
         self.callback = callback
-        self.showFullScreen()
-        self.show()
+        
+        if sys.platform == 'win32':
+            self.showFullScreen()
+        else:
+            window_size = self.get_adjust_window_size()
+            self.resize(window_size)
+            
+    def get_adjust_window_size(self):
+        # # 獲取當前螢幕的縮放因子
+        screen = QApplication.primaryScreen()
+        screen_size = screen.size()
+        return screen_size
     
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -35,12 +48,17 @@ class WindowCapture(QWidget):
             self.start_point = event.pos()
 
     def update_full_screen_pixmap(self):
-        mouse_pos = QCursor.pos()
-        screen = QApplication.screenAt(mouse_pos)
-        if screen:
-            self.full_screen_pixmap = screen.grabWindow(0)
+        if sys.platform == 'win32':
+            mouse_pos = QCursor.pos()
+            screen = QApplication.screenAt(mouse_pos)
+            if screen:
+                self.full_screen_pixmap = screen.grabWindow(0)
+            else:
+                self.full_screen_pixmap = QPixmap(QApplication.primaryScreen().grabWindow(0))
         else:
-            self.full_screen_pixmap = QPixmap(QApplication.primaryScreen().grabWindow(0))
+            screen = QApplication.primaryScreen()
+            self.full_screen_pixmap = QPixmap(screen.grabWindow(0))
+            self.full_screen_pixmap.setDevicePixelRatio(screen.devicePixelRatio())
 
     def mouseMoveEvent(self, event):
         if self.selecting:

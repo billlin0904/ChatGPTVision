@@ -3,7 +3,7 @@
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QApplication
-from qfluentwidgets import SubtitleLabel, ImageLabel, BodyLabel, PushButton, setFont, IndeterminateProgressBar
+from qfluentwidgets import SubtitleLabel, ImageLabel, PlainTextEdit, PushButton, setFont, IndeterminateProgressBar
 from window_capture import WindowCapture
 from chatgpt_service import ChatGPTService
 
@@ -17,12 +17,10 @@ class Widget(QFrame):
         self.label = SubtitleLabel(text, self)
         self.vBoxLayout = QVBoxLayout(self)
         self.captureWindowBtn = PushButton(self.tr('Capture window'), self)
-        self.captureWindowBtn.clicked.connect(lambda: self.doCaptureWindow())
+        self.captureWindowBtn.clicked.connect(lambda: self.captureWindow())
         self.imageLabel = ImageLabel(self)
         self.imageLabel.setBorderRadius(8, 8, 0, 0)
-        self.responseBodyLabel = BodyLabel(self)
-        #self.responseBodyLabel.setMaximumHeight(300)
-        #self.responseBodyLabel.setMaximumWidth(640)
+        self.responseBodyLabel = PlainTextEdit(self)
         self.waitResponseProcessRing = IndeterminateProgressBar(self)
         self.waitResponseProcessRing.hide()
         setFont(self.label, 24)
@@ -33,13 +31,12 @@ class Widget(QFrame):
         self.vBoxLayout.addWidget(self.waitResponseProcessRing, 0, Qt.AlignCenter)
         self.vBoxLayout.addWidget(self.captureWindowBtn, 0, Qt.AlignCenter)
         self.setObjectName(text.replace(' ', '-'))
-        self.conversation_history = []
         self.window_capture = WindowCapture(self.onCaptureCompleted)
         self.window_capture.hide()
 
         # 初始化 ChatGPTService 並移動到 QThread 中
         self.chatgpt_service = ChatGPTService()
-        #self.sendImage.connect(self.chatgpt_service.sendImage)  # 連接信號到槽
+        self.sendImage.connect(self.chatgpt_service.sendImage)  # 連接信號到槽
         #self.textToVoice.connect(self.chatgpt_service.textToVoice) 
         
         self.thread = QThread()
@@ -48,12 +45,16 @@ class Widget(QFrame):
 
         # 連接 ChatGPTService 的信號到顯示方法
         self.chatgpt_service.responseReady.connect(self.displayChatGPTResponse)
-        self.chatgpt_service.textToVoiceReady.connect(self.playVoiceResponse)
+        #self.chatgpt_service.textToVoiceReady.connect(self.playVoiceResponse)
 
-    def doCaptureWindow(self):
+    def captureWindow(self):
         QApplication.setOverrideCursor(Qt.CrossCursor)
-        self.window_capture.show()
-        self.window_capture.update_full_screen_pixmap()        
+        self.showWindow.emit(False)
+        QTimer.singleShot(500, lambda: self.doCaptureWindow())
+        
+    def doCaptureWindow(self):
+        self.window_capture.update_full_screen_pixmap()
+        self.window_capture.show()       
         self.responseBodyLabel.hide()
         self.waitResponseProcessRing.show()
         self.waitResponseProcessRing.start()
@@ -70,7 +71,7 @@ class Widget(QFrame):
         self.sendImage.emit(captured_pixmap)  # 發送圖片信號
         self.showWindow.emit(True)        
         self.window_capture.hide()
-        self.textToVoice.emit(self.responseBodyLabel.text()) 
+        self.textToVoice.emit(self.responseBodyLabel.toPlainText()) 
         
     def playVoiceResponse(self, audio_data: bytes):
         pass
@@ -79,4 +80,4 @@ class Widget(QFrame):
         self.waitResponseProcessRing.stop()
         self.waitResponseProcessRing.hide()
         self.responseBodyLabel.show()
-        self.responseBodyLabel.setText(response)
+        self.responseBodyLabel.setPlainText(response)

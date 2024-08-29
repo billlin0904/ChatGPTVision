@@ -13,6 +13,8 @@ if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     app = QApplication(sys.argv)
+    app.setAttribute(Qt.AA_NativeWindows, True)
+    
     w = Window()
     w.show()
     sys.exit(app.exec_())
