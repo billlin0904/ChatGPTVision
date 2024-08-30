@@ -104,5 +104,5 @@ class WindowCapture(QWidget):
     def capture_selected_area(self):        
         image, _ = self.get_capture_selected_area()
         self.callback(image)
-        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        QApplication.restoreOverrideCursor()
 

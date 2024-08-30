@@ -6,7 +6,12 @@ from window_capture import WindowCapture
 from chatgpt_service import ChatGPTService
 from qfluentwidgets import FluentIcon as FIF
 
-class Widget(QFrame):
+class SettingFrame(QFrame):
+    def __init__(self, text: str, parent=None):
+        super().__init__(parent=parent)
+        self.setObjectName(text.replace(' ', '-'))
+
+class AskGptFrame(QFrame):
     showWindow = pyqtSignal(bool)
     sendImage = pyqtSignal(QPixmap, str)
     textToVoice = pyqtSignal(str)
@@ -22,6 +27,8 @@ class Widget(QFrame):
         self.imageLabel = ImageLabel(self)
         self.imageLabel.setBorderRadius(2, 2, 2, 2)
         self.responseBodyLabel = PlainTextEdit(self)
+        self.responseBodyLabel.setReadOnly(True)
+        self.responseBodyLabel.hide()
         self.waitResponseProcessRing = IndeterminateProgressBar(self)
         self.waitResponseProcessRing.hide()
 
@@ -34,7 +41,7 @@ class Widget(QFrame):
         self.vBoxLayout.addWidget(self.waitResponseProcessRing, 0, Qt.AlignCenter)
 
         # 新增的功能按鈕和輸入框
-        self.captureWindowBtn = ToolButton(FIF.PRINT, self)
+        self.captureWindowBtn = ToolButton(FIF.CUT, self)
         self.pasteTextBtn = ToolButton(FIF.CLIPPING_TOOL, self)
         self.inputText = LineEdit(self)
         self.inputText.setText("TLDR: and use traditional chinese response.")
@@ -60,6 +67,7 @@ class Widget(QFrame):
         self.window_capture.hide()
         self.chatgpt_service = ChatGPTService()
         self.sendImage.connect(self.chatgpt_service.sendImage)
+        self.textToVoice.connect(self.chatgpt_service.textToVoice)
         
         self.thread = QThread()
         self.chatgpt_service.moveToThread(self.thread)
@@ -90,7 +98,7 @@ class Widget(QFrame):
         self.responseBodyLabel.setMinimumWidth(scaled_screenshot.width())
         self.waitResponseProcessRing.setMinimumWidth(self.responseBodyLabel.width())
         self.imageLabel.setImage(scaled_screenshot)
-        self.sendImage.emit(captured_pixmap, self.inputText.text())
+        self.sendImage.emit(captured_pixmap, self.inputText.text())        
         self.showWindow.emit(True)        
         self.window_capture.hide()
         
@@ -140,3 +148,4 @@ class Widget(QFrame):
         self.waitResponseProcessRing.hide()
         self.responseBodyLabel.show()
         self.responseBodyLabel.setPlainText(response)
+        self.textToVoice.emit(response)

@@ -1,3 +1,4 @@
 PyQt-Fluent-Widgets -i https://pypi.org/simple/
 requests
 openai
+ChatTTS

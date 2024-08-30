@@ -5,48 +5,26 @@ import requests
 import base64
 import os
 from PyQt5.QtGui import QPixmap, QImage
+import torch
+import ChatTTS
+import numpy
 
 class ChatGPTService(QObject):
     responseReady = pyqtSignal(str)    
-    textToVoiceReady = pyqtSignal(bytes)
+    textToVoiceReady = pyqtSignal(numpy.ndarray)
 
     def __init__(self):
         super().__init__()     
+        self.chat = ChatTTS.Chat()
+        self.chat.load()
+        self.textToVoice("您好")
         
     @pyqtSlot(str)
     def textToVoice(self, text: str):
-        """
-        將文本轉換為語音，並返回語音數據。
-        """
-        base_url = "free.gpt.ge"
-        api_key = os.getenv('FREE_GPT_API_KEY')
-
-        try:
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            }
-
-            payload = {
-                "model": "tts-1",  # 使用 TTS 模型
-                "input": text,
-                "voice": "nova",  # 可以選擇不同的聲音，如 echo, fable, onyx, nova, shimmer
-                "response_format": "mp3",  # 選擇音頻格式
-                "speed": 1.0  # 可以調整語速，默認為 1.0
-            }
-
-            response = requests.post(f"https://{base_url}/v1/audio/speech", headers=headers, json=payload)
-
-            if response.status_code == 200:
-                audio_content = response.content
-                self.textToVoiceReady.emit(audio_content)
-            else:
-                print(f"Error: {response.status_code}, {response.text}")
-                self.textToVoiceReady.emit(b"")
-        except Exception as e:
-            print(f"發送文字轉語音過程中發生錯誤：{e}")
-            self.textToVoiceReady.emit(b"")   
-
+        texts = [ text ]
+        wavs = self.chat.infer(texts, use_decoder=True)
+        self.textToVoiceReady.emit(wavs[0])
+    
     @pyqtSlot(QPixmap, str)
     def sendImage(self, pixmap: QPixmap, prompt: str):
         """

@@ -2,7 +2,7 @@
 
 from PyQt5.QtGui import QIcon
 from qfluentwidgets import FluentWindow, MessageBox, NavigationItemPosition
-from widget import Widget
+from widget import AskGptFrame, SettingFrame
 from qfluentwidgets import FluentIcon as FIF
 from PyQt5.QtWidgets import QApplication
 import sys
@@ -26,11 +26,11 @@ class Window(FluentWindow):
 
     def __init__(self):
         super().__init__()
-        self.homeInterface = Widget('Ask GPT', self)
+        self.homeInterface = AskGptFrame('Ask GPT', self)
         self.homeInterface.showWindow.connect(self.showOrHidden)
-        self.settingInterface = Widget('Setting', self)
+        self.settingInterface = SettingFrame('Setting', self)
         self.initNavigation()
-        self.initWindow()
+        self.initWindow()        
 
     def initNavigation(self):
         self.addSubInterface(self.homeInterface, FIF.HOME, 'Ask GTP')
@@ -38,7 +38,7 @@ class Window(FluentWindow):
         self.navigationInterface.setAcrylicEnabled(True)
 
     def initWindow(self):
-        self.resize(900, 700)
+        self.resize(640, 480)
         self.setWindowIcon(QIcon('./assets/icons/horus.ico'))
         self.setWindowTitle('Horus')
         
