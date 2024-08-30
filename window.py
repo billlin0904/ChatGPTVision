@@ -38,8 +38,8 @@ class Window(FluentWindow):
         self.navigationInterface.setAcrylicEnabled(True)
 
     def initWindow(self):
-        self.resize(640, 480)
-        self.setWindowIcon(QIcon('./assets/icons/horus.ico'))
+        self.resize(640, 300)
+        self.setWindowIcon(QIcon('./horus.ico'))
         self.setWindowTitle('Horus')
         
         desktop = QApplication.desktop().availableGeometry()

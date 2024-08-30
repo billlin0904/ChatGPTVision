@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QThread, QFile, QFileInfo, QIODevice
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFont
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QApplication
 from qfluentwidgets import SubtitleLabel, ImageLabel, LineEdit, PlainTextEdit, IndeterminateProgressBar, ToolButton, setFont
@@ -44,7 +44,7 @@ class AskGptFrame(QFrame):
         self.captureWindowBtn = ToolButton(FIF.CUT, self)
         self.pasteTextBtn = ToolButton(FIF.CLIPPING_TOOL, self)
         self.inputText = LineEdit(self)
-        self.inputText.setText("TLDR: and use traditional chinese response.")
+        self.inputText.setText("你是一位B站老用户，请使用暴躁的语言风格，对以下问题给出简短、机智的回答 and use traditional chinese response.")
         self.sendBtn = ToolButton(FIF.SEND, self)
 
         # 連接按鈕信號到槽函數
@@ -73,6 +73,7 @@ class AskGptFrame(QFrame):
         self.chatgpt_service.moveToThread(self.thread)
         self.thread.start()
         self.chatgpt_service.responseReady.connect(self.displayChatGPTResponse)
+        self.chatgpt_service.textToVoiceReady.connect(self.playAudio)
         
         self.waitResponseProcessRing.setMinimumWidth(self.responseBodyLabel.width())
 
@@ -149,3 +150,7 @@ class AskGptFrame(QFrame):
         self.responseBodyLabel.show()
         self.responseBodyLabel.setPlainText(response)
         self.textToVoice.emit(response)
+        
+    def playAudio(self):
+        pass
+        

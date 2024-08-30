@@ -1,29 +1,45 @@
 # chatgpt_service.py
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QBuffer, QIODevice
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QBuffer, QIODevice, QFileInfo
 import requests
 import base64
 import os
 from PyQt5.QtGui import QPixmap, QImage
-import torch
+import re
 import ChatTTS
-import numpy
+import torch
+import torchaudio
+import numpy as np
+from playsound import playsound
+
+def deterministic(seed=0):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 class ChatGPTService(QObject):
     responseReady = pyqtSignal(str)    
-    textToVoiceReady = pyqtSignal(numpy.ndarray)
+    textToVoiceReady = pyqtSignal()
 
     def __init__(self):
         super().__init__()     
         self.chat = ChatTTS.Chat()
         self.chat.load()
-        self.textToVoice("您好")
+        deterministic(900)
+        #self.textToVoice("您好 這是一段測試語音")
         
     @pyqtSlot(str)
     def textToVoice(self, text: str):
+        text = re.sub(r'[^A-Za-z0-9\u4e00-\u9fff]+', '', text)
         texts = [ text ]
         wavs = self.chat.infer(texts, use_decoder=True)
-        self.textToVoiceReady.emit(wavs[0])
+        result = torchaudio.functional.resample(torch.from_numpy(wavs[0]), 24000, 44100)
+        torchaudio.save("output.wav", result, 44100)
+        path = QFileInfo("output.wav").absoluteFilePath()
+        playsound(path)
+        self.textToVoiceReady.emit()
     
     @pyqtSlot(QPixmap, str)
     def sendImage(self, pixmap: QPixmap, prompt: str):
