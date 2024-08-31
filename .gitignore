@@ -1,3 +1,7 @@
 /.env
 /captured_window.png
 /screenshot.png
+/__pycache__
+/asset
+/config
+output.wav
