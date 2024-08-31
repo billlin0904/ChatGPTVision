@@ -27,13 +27,13 @@ class ChatGPTService(QObject):
 
     def __init__(self):
         super().__init__()     
-        self.chat = ChatTTS.Chat()
-        self.chat.load()
-        deterministic(900)        
+        self.chat = ChatTTS.Chat()        
         #self.textToVoice("您好 這是一段測試語音")
         
     @pyqtSlot(str)
     def textToVoice(self, text: str):
+        if not self.chat.has_loaded():
+            self.chat.load(compile=False)
         text = re.sub(r'[^A-Za-z0-9\u4e00-\u9fff]+', '', text)
         texts = [ text ]
         wavs = self.chat.infer(texts, use_decoder=True)
